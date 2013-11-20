@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash
+from flask import Flask, render_template
 
 app = Flask("Food Pantry Webapp - CS 4400")
 app.config.from_object('config')
@@ -7,7 +7,5 @@ app.config.from_object('config')
 def not_found(e):
     return "OH GOD WHY", 404
 
-@app.route('/')
-def hello():
-    flash("Hello world!")
-    return render_template('index.html')
+from app.views import mod as views
+app.register_blueprint(views)
