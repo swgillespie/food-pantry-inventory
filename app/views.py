@@ -14,6 +14,7 @@ def login():
         print "Login: username: {} password: {}".format(
             form.username.data, form.password.data
         )
+        return render_template('index.html')
     return render_template('login.html', form=form)
 
 @mod.route('register/', methods=['GET', 'POST'])
