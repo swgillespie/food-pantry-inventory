@@ -68,14 +68,19 @@
 {% from "_form_helpers.html" import render_field %}
 
 <div class="container">
-	<form class="form-signin" method=post action="/">
-		<h1 class="form-signin-heading text-muted">Sign In</h1>
+	<form class="form-signin" method=post action="/register/">
+		<h1 class="form-signin-heading text-muted">New User</h1>
 		{{ render_field(form.username) }}
+		{{ render_field(form.firstname) }}
+		{{ render_field(form.lastname) }}
+		{{ render_field(form.email) }}
 		{{ render_field(form.password) }}
+		{{ render_field(form.confirm_pass) }}
+		{{ render_field(form.is_director) }}
 		<button class="btn btn-lg btn-primary btn-block" type="submit">
-			Sign In
+			Submit
 		</button>
-		<a class="btn btn-lg btn-block btn-success" href="/register/" role="button">Register</a>
+	</form>
 
 </div>
 p
