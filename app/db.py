@@ -10,6 +10,7 @@ class DBInterface(object):
         dbname.
         '''
         self._sqlconn = sqlite3.connect(dbname)
+        self._sqlconn.row_factory = sqlite3.Row
         # lock is necessary since sqlite is not thread-safe
         self._lock = threading.Lock()
 
@@ -26,6 +27,15 @@ class DBInterface(object):
             return retval
         return _lock
 
+    @requires_lock
+    def execute_script(self, script):
+        self._sqlconn.executescript(script)
+        self._sqlconn.commit()
+
+    @requires_lock
+    def close(self):
+        self._sqlconn.close()
+        
     @requires_lock
     def do_login(self, username, password):
         '''
