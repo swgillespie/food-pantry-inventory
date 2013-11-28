@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <ol class="breadcrumb">
+                    <li><a href="/">Home</a></li>
+		    <li class="active">Pickup</li>
+                </ol>
+                <h1>Food Pantry Management System <small>Pickup</small></h1>
+                <hr>
+            </div>
+        </div>
+    </div><!-- /.container -->
+    <div class="container">
+      {% if rows %}
+      <table class="table table-hover">
+	<tr>
+	  <th></th>
+	  <th>Last Name</th>
+	  <th>First Name</th>
+	  <th>Size</th>
+	  <th>Address</th>
+	  <th>Telephone</th>
+	  <th>Monthly Pickup Day</th>
+	</tr>
+        {% for row in rows %}
+	<tr>
+	  <td> <a href="{{ row['client_id'] }}" class="btn btn-success"> Sign In</a></td>
+	  <td> {{ row['lastname'] }} </td>
+	  <td> {{ row['firstname'] }} </td>
+	  <td> {{ row['family_size'] }} </td>
+	  <td> {{ row['street'] }} , {{ row['city'] }}, {{ row['state'] }}, {{ row['zip'] }} {{ row['apartment'] }} </td>
+	  <td> {{ row['phone'] }} </td>
+	  <td> {{ row['pickup_day'] }} </td>
+	</tr>
+	{% endfor %}
+	</table>
+      {% else %}
+      <form class="form-inline" role="form" action="/pickup/" method="post">
+	<label for="pickup">Enter the desired pickup day</label>
+	<input type="number" placeholder="Pickup day" id="pickup" name="pickup">
+	<button type="submit" class="btn btn-default">Submit</button>
+      </form>
+      {% endif %}
+    </div>
+</div>
+{% endblock %}
