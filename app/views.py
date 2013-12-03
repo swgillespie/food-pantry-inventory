@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, g, redirect, request, url_for, flash
 # suppress pyflakes warning
 # from app.decorators import requires_login
-from app.forms import LoginForm, RegistrationForm, DropoffForm
+from app.forms import LoginForm, RegistrationForm, DropoffForm, NewProductForm
 import base64
 
 
@@ -166,9 +166,29 @@ def dropoff():
         )
     ## END DB TRANSACTION
         return redirect('/dropoff/')
+    return render_template('dropoff.html', form=form)
 
 
 
-@mod.route('products/', methods=['GET', 'POST'])
+@mod.route('products/', methods=['GET'])
 def products():
     return render_template('products.html')
+
+@mod.route('products/list/', methods=['GET', 'POST'])
+def product_list():
+    return render_template('product_list.html')
+
+@mod.route('products/new/', methods=['GET', 'POST'])
+def new_product():
+    form = NewProductForm(request.form)
+    if request.method == 'GET':
+        return render_template('new_product.html', form=form)
+    elif request.method == 'POST' and form.validate():
+    ## BEGIN DB TRANSACTION
+        print ">>>NEW PRODUCT: product: {}, source: {}, cost-per-unit: {}".format(
+            form.product.data, form.source.data, form.cost.data
+        )
+    ## END DB TRANSACTION
+        return redirect('/products/new/')
+    return render_template('new_product.html', form=form)
+
