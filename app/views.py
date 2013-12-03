@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, g, redirect, request, url_for, flash
 # suppress pyflakes warning
 # from app.decorators import requires_login
-from app.forms import LoginForm, RegistrationForm
+from app.forms import LoginForm, RegistrationForm, DropoffForm
 import base64
 
 
@@ -153,3 +153,14 @@ def view_edit_bag(bagnameEnc):
         print "The qty of product {} has been updated to {}.".format(product_name, qty)
     ## END DB TRANSACTION
     return render_template('viewEditBag.html', bag=bag, bagname=bagname, bagnameEnc=bagnameEnc)
+
+@mod.route('dropoff/', methods=['GET', 'POST'])
+def dropoff():
+    form = DropoffForm(request.form)
+    if request.method == 'POST' and form.validate():
+    ## BEGIN DB TRANSACTION
+         print "Dropoff: product: {} source: {} qty: {}".format(
+             form.product.data, form.source.data, form.qty.data
+         )
+    ## END DB TRANSACTION
+    return render_template('dropoff.html', form=form)
