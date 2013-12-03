@@ -100,3 +100,13 @@ def family_pickup(client_id):
 def clients():
     # nothing to do here but render the template response
     return render_template('clients.html')
+
+@mod.route('clients/list/', methods=['GET', 'POST'])
+def client_list():
+    # TODO
+    return render_template('client_list.html')
+
+@mod.route('clients/new/', methods=['GET', 'POST'])
+def new_client():
+    # TODO
+    return render_template('new_client.html')
