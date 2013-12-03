@@ -1,4 +1,5 @@
 from flask import Flask, render_template
+import logging
 
 app = Flask("Food Pantry Webapp - CS 4400")
 app.config.from_object('config')
