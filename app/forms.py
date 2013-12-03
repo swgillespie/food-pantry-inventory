@@ -1,4 +1,4 @@
-from wtforms import Form, TextField, PasswordField, BooleanField, IntegerField, validators
+from wtforms import Form, TextField, PasswordField, BooleanField, DecimalField, IntegerField, validators
 
 class LoginForm(Form):
     username = TextField("Username", [
@@ -45,6 +45,19 @@ class DropoffForm(Form):
     ])
     qty = IntegerField("Qty", [
         validators.NumberRange(min=1, message="Must drop off at least one of this product."),
+        validators.InputRequired(message="This field is required.")
+    ])
+
+class NewProductForm(Form):
+    product = TextField("Product", [
+        validators.Length(min=2, max=24),
+        validators.InputRequired(message="This field is required.")
+    ])
+    source = TextField("Source", [
         validators.Length(min=3, max=24),
+        validators.InputRequired(message="This field is required.")
+    ])
+    cost = DecimalField("Cost Per Unit", [
+        validators.NumberRange(min=0.01, message="Must drop off at least one of this product."),
         validators.InputRequired(message="This field is required.")
     ])
