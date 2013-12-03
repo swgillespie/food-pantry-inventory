@@ -1,4 +1,4 @@
-from wtforms import Form, TextField, PasswordField, BooleanField, validators
+from wtforms import Form, TextField, PasswordField, BooleanField, IntegerField, validators
 
 class LoginForm(Form):
     username = TextField("Username", [
@@ -33,3 +33,17 @@ class RegistrationForm(Form):
     ])
     confirm_pass = PasswordField("Password Again")
     is_director = BooleanField("Are you a director?")
+
+class DropoffForm(Form):
+    product = TextField("Product", [
+        validators.Length(min=2, max=24),
+        validators.InputRequired(message="This field is required.")
+    ])
+    source = TextField("Source", [
+        validators.Length(min=3, max=24),
+        validators.InputRequired(message="This field is required.")
+    ])
+    qty = IntegerField("Qty", [
+        validators.NumberRange(min=1, message="Must drop off at least one of this product."),
+        validators.InputRequired(message="This field is required.")
+    ])
