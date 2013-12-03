@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, g, redirect, request, url_for, fla
 # suppress pyflakes warning
 # from app.decorators import requires_login
 from app.forms import LoginForm, RegistrationForm
+import base64
 
 
 mod = Blueprint('tools', __name__, url_prefix='/')
@@ -110,3 +111,45 @@ def client_list():
 def new_client():
     # TODO
     return render_template('new_client.html')
+
+@mod.route('bag_list/', methods=['GET'])
+def bag_list():
+    bags = [{
+                'bagname': 'Family Bag 1',
+                'numitems': 5,
+                'numclients': 37,
+                'cost': 15.64,
+            },
+            {
+                'bagname': 'Family Bag 2',
+                'numitems': 7,
+                'numclients': 21,
+                'cost': 23.78,
+            }]
+    for bag in bags:
+        bag['bagnameEnc'] = base64.b16encode(bag['bagname'])
+    return render_template('bag_list.html', bags=bags)
+
+@mod.route('viewEditBag/<string:bagnameEnc>/', methods=['GET', 'POST'])
+def view_edit_bag(bagnameEnc):
+    bagname = base64.b16decode(bagnameEnc)
+    if request.method=='GET':
+    ## BEGIN DB TRANSACTION
+        bag = [
+            { 'product_name': 'milk', 'qty': 2 },
+            { 'product_name': 'cookies', 'qty': 1 },
+            { 'product_name': 'pretzels', 'qty': 2 },
+            { 'product_name': 'crackers', 'qty': 5 }
+        ]
+    elif request.method=='POST':
+        product_name=request.form['product_name']
+        qty=request.form['qty']
+        bag = [
+            { 'product_name': 'milk', 'qty': request.form['qty'] },
+            { 'product_name': 'cookies', 'qty': 1 },
+            { 'product_name': 'pretzels', 'qty': 2 },
+            { 'product_name': 'crackers', 'qty': 5 }
+        ]
+        print "The qty of product {} has been updated to {}.".format(product_name, qty)
+    ## END DB TRANSACTION
+    return render_template('viewEditBag.html', bag=bag, bagname=bagname, bagnameEnc=bagnameEnc)
