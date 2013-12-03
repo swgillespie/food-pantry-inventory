@@ -95,3 +95,8 @@ def family_pickup(client_id):
         return render_template('pickup.html')
     # other methods not supported
     return redirect('/pickup/')
+
+@mod.route('clients/', methods=['GET'])
+def clients():
+    # nothing to do here but render the template response
+    return render_template('clients.html')
