@@ -150,17 +150,19 @@ def view_edit_bag(bagnameEnc):
             { 'product_name': 'pretzels', 'qty': 2 },
             { 'product_name': 'crackers', 'qty': 5 }
         ]
-        print "The qty of product {} has been updated to {}.".format(product_name, qty)
+        print ">>>PRODUCT UPDATE: The qty of product {} has been updated to {}.".format(product_name, qty)
     ## END DB TRANSACTION
     return render_template('viewEditBag.html', bag=bag, bagname=bagname, bagnameEnc=bagnameEnc)
 
 @mod.route('dropoff/', methods=['GET', 'POST'])
 def dropoff():
     form = DropoffForm(request.form)
-    if request.method == 'POST' and form.validate():
+    if request.method == 'GET':
+        return render_template('dropoff.html', form=form)
+    elif request.method == 'POST' and form.validate():
     ## BEGIN DB TRANSACTION
-         print "Dropoff: product: {} source: {} qty: {}".format(
-             form.product.data, form.source.data, form.qty.data
-         )
+        print ">>>NEW DROPOFF: product: {}, source: {}, qty: {}".format(
+            form.product.data, form.source.data, form.qty.data
+        )
     ## END DB TRANSACTION
-    return render_template('dropoff.html', form=form)
+        return redirect('/dropoff/')

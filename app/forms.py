@@ -45,6 +45,5 @@ class DropoffForm(Form):
     ])
     qty = IntegerField("Qty", [
         validators.NumberRange(min=1, message="Must drop off at least one of this product."),
-        validators.Length(min=3, max=24),
         validators.InputRequired(message="This field is required.")
     ])
