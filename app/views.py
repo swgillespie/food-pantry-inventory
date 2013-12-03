@@ -166,3 +166,9 @@ def dropoff():
         )
     ## END DB TRANSACTION
         return redirect('/dropoff/')
+
+
+
+@mod.route('products/', methods=['GET', 'POST'])
+def products():
+    return render_template('products.html')
