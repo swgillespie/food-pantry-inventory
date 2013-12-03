@@ -37,6 +37,17 @@
         </div><!-- /.navbar-collapse -->
       </div><!-- /.container -->
     </nav>
+    {% with message = get_flashed_messages() %}
+    {% if messages %}
+    <div class="container">
+      {% for msg in messages %}
+      <div class="alert alert-info">
+	{{ msg }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
 {% block content %}{% endblock %}
     <div class="container">
         <hr>

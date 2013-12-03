@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, g, redirect, request, url_for
+from flask import Blueprint, render_template, g, redirect, request, url_for, flash
 # suppress pyflakes warning
 # from app.decorators import requires_login
 from app.forms import LoginForm, RegistrationForm
@@ -70,4 +70,28 @@ def pickup():
             return render_template('pickup.html', rows=rows)
     # other methods are not supported
     return render_template('pickup.html')
-    
+
+@mod.route('pickup/<int:client_id>/', methods=['GET', 'POST'])
+def family_pickup(client_id):
+    if request.method == 'GET':
+        ## BEGIN DB TRANSACTION
+        client = {
+            'firstname': 'sean',
+            'lastname': 'gillespie',
+            'id': 42
+        }
+        products = [
+            { 'product_name': 'milk', 'current_qty': 42 },
+            { 'product_name': 'cookies', 'current_qty': 11 },
+            { 'product_name': 'pretzels', 'current_qty': 39 },
+            { 'product_name': 'crackers', 'current_qty': 55 }
+        ]
+        ## END DB TRANSACTION
+        return render_template('family_pickup.html', client=client, rows=products)
+    elif request.method == 'POST':
+        ## BEGIN DB TRANSACTION
+        print "Client {} just picked up their bag".format(client_id)
+        ## END DB TRANSACTION
+        return render_template('pickup.html')
+    # other methods not supported
+    return redirect('/pickup/')
