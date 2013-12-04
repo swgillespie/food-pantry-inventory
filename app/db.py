@@ -135,6 +135,7 @@ class DBInterface(object):
             'VALUES (?, ?, ?)'
         ]), (client['pickup_day'], client['id'], client['bag_name']))
         print "pickup complete"
+        self._sqlconn.commit()
 
     @requires_lock
     def do_drop_off(self, *deliveries, date):
@@ -165,9 +166,10 @@ class DBInterface(object):
                     'VALUES (?, ?)'
                 ]), (delivery['product'], delivery['source']))
             result = self._sqlconn.execute(''.join([
-                'INSERT INTO dropoff_transaction (date, qty, source_name, product_name)',
+                'INSERT INTO dropoff_transaction (date, qty, source_name, product_name) ',
                 'VALUE (?, ?, ?, ?)'
             ]), (date, delivery['qty'], delivery['source'], delivery['product']))
+        self._sqlconn.commit()
         print "Dropoff complete"
 
     @requires_lock
@@ -201,7 +203,29 @@ class DBInterface(object):
         Given a dictionary with the Client's information, insert
         into the clients table.
         '''
-        pass
+        result = self._sqlconn.execute(''.join([
+            'INSERT INTO clients (gender, dob, start_date, street, city, state, zip, ',
+            'apartment, firstname, lastname, phone, bag_name, pickup_day)',
+            'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        ]), (
+            client_dictionary['gender'],
+            client_dictionary['dob'],
+            client_dictionary['start'],
+            client_dictionary['date'],
+            client_dictionary['street'],
+            client_dictionary['city'],
+            client_dictionary['state'],
+            client_dictionary['zip'],
+            client_dictionary['apartment'],
+            client_dictionary['firstname'],
+            client_dictionary['lastname'],
+            client_dictionary['phone'],
+            client_dictionary['bag'],
+            client_dictionary['name'],
+            client_dictionary['pickup_day']
+        ))
+        self._sqlconn.commit()
+        print "Client addition complete"        
 
     @requires_lock
     def do_add_family(self, family_dictionary):
@@ -209,35 +233,87 @@ class DBInterface(object):
         Given a dictionary witih a family's information, insert
         into families table.
         '''
-        pass
+        result = self._sqlconn.execute(''.join([
+            'INSERT INTO family_members (firstname, lastname, dob, gender, client_id) ',
+            'VALUES (?, ? ?, ?, ?)'
+        ]), (
+            family_dictionary['firstname'],
+            family_dictionary['lastname'],
+            family_dictionary['dob'],
+            family_dictionary['gender'],
+            family_dictionary['client_id']
+        ))
+        self._sqlconn.commit()
+        print "Family addition complete"
 
     @requires_lock
     def do_view_bag(self, bag_name):
         '''
         Performs a query that returns the contents of a bag named bag_name.
         '''
-        pass
+        result = self._sqlconn.execute(''.join([
+            'SELECT * FROM bag_holds LEFT OUTER JOIN products ',
+            'ON bag_holds.product_name = products.name ',
+            'WHERE bag_holds.bag_name = ? ',
+            'ORDER BY products.name'
+        ]), (bag_name,))
+        return self._row_to_dict(result)
 
     @requires_lock
-    def do_add_product(self, bag_name, product_name, qty):
+    def do_add_product(self, bag_name, product_name, qty, last_qty):
         '''
         Adds qty number of product_name to the bag bag_name
         '''
-        pass
+        result = self._sqlconn.execute(''.join([
+            'SELECT * FROM bag_holds LEFT OUTER JOIN products ',
+            'ON bag_holds.product_name = products.name ',
+            'WHERE bag_holds.bag_name = ? AND products.name = ?'
+        ]), (bag_name, product_name))
+        if len([x for x in result]) != 0:
+            print "product {} is already in bag {}".format(product_name, bag_name)
+        else:
+            result = self._sqlconn.execute(''.join([
+                'INSERT INTO bag_holds (current_qty, last_month_qty, bag_name, product_name) ',
+                'VALUES (?, ?, ?, ?)'
+            ]), (qty, last_qty, bag_name, product_name))
+            self._sqlconn.commit()
+        print "product {} added to bag {}".format(product_name, bag_name)
 
     @requires_lock
     def do_remove_product(self, bag_name, product_name):
         '''
         Removes product_name from a bag called bag_name
         '''
-        pass
+        result = self._sqlconn.execute(''.join([
+            'DELETE FROM bag_holds ',
+            'WHERE bag_holds.product_name = ? AND bag_name = ?'
+        ]), (product_name, bag_name))
+        self._sqlconn.commit()
+        print "product {} removed from bag {}".format(product_name, bag_name)
+
+    @requires_lock
+    def do_edit_product_qty(self, bag_name, product_name, qty):
+        '''
+        Changes the quantity of the product product_name in bag_name to qty.
+        '''
+        result = self._sqlconn.execute(''.join([
+            'UPDATE bag_holds ',
+            'SET current_qty=? ',
+            'WHERE bag_holds.bag_name = ? AND bag_holds.product_name = ?'
+        ]), (bag_name, product_name))
+        self._sqlconn.commit()
+        print "product {} updated to qty {}".format(product_name, qty)
 
     @requires_lock
     def do_list_products(self):
         '''
         Returns a list of all products currently in the food pantry.
         '''
-        pass
+        result = self._sqlconn.execute(''.join([
+            'SELECT * FROM products ',
+            'ORDER BY name'
+        ]))
+        return self._row_to_dict(result)
 
     @requires_lock
     def do_add_new_product(self, product_dictionary):
@@ -245,7 +321,15 @@ class DBInterface(object):
         Given a dictionary with a product's information, insert into
         products table.
         '''
-        pass
+        result = self._sqlconn.execute(''.join([
+            'INSERT INTO products (name, cost, source_name) ',
+            'VALUES (?, ?, ?)'
+        ]), (
+            product['name'],
+            product['cost'],
+            product['source_name']
+        ))
+        self._sqlconn.commit()
 
     @requires_lock
     def do_monthly_service_report(self):
