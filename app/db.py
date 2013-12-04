@@ -1,7 +1,6 @@
 import threading
 import sqlite3
 from functools import wraps
-import logging
 import hashlib
 
 SCHEMA_FILE = 'schema.sql'
@@ -138,7 +137,7 @@ class DBInterface(object):
         self._sqlconn.commit()
 
     @requires_lock
-    def do_drop_off(self, *deliveries, date):
+    def do_drop_off(self, date, *deliveries):
         '''
         Given some number of delivery DICTIONARIES with attributes
         expected in the pseudocode, performs a drop off in the database.
@@ -325,9 +324,9 @@ class DBInterface(object):
             'INSERT INTO products (name, cost, source_name) ',
             'VALUES (?, ?, ?)'
         ]), (
-            product['name'],
-            product['cost'],
-            product['source_name']
+            product_dictionary['name'],
+            product_dictionary['cost'],
+            product_dictionary['source_name']
         ))
         self._sqlconn.commit()
 
@@ -336,11 +335,46 @@ class DBInterface(object):
         '''
         Generates a monthly service report.
         '''
-        pass
+        result_list = []
+        client_ids = self._sqlconn.execute(''.join([
+            'SELECT id FROM clients'
+        ]))
+        for row in client_ids:
+            id = row['id']
+            result = self._sqlconn.execute(''.join([
+                'SELECT * FROM ',
+                '(SELECT COUNT(*) AS under18 FROM family_members ',
+                'WHERE client_id = ? AND strftime(\'%Y\', \'now\') - strftime(\'%Y\', dob) < 18)  ',
+                '(SELECT COUNT(*) AS 19to64 FROM family_members ',
+                'WHERE client_id = ? AND strftime(\'%Y\', \'now\') - strftime(\'%Y\', dob) BETWEEN 19 AND 65) ',
+                '(SELECT COUNT(*) AS 65plus FROM family_members ',
+                'WHERE client_id = ? AND strftime(\'%Y\', \'now\') - strftime(\'%Y\', dob) > 65) '
+            ]), (id, id, id))
+            result_dict = self._row_to_dict(result)
+            result_list.append(result_dict)
+        out_dict = {}
+        out_dict['num_clients'] = len(result_dict)
+        out_dict['num_people'] = sum([x['under18'] + x['19to64'] + x['65plus'] for x in result_list]) + out_dict['num_clients']
+        result = self._sqlconn.execute(''.join([
+            'SELECT SUM(cost) AS total_cost ', 
+            '(SELECT product_name FROM ',
+            '(SELECT id, bag_name FROM clients WHERE pickup_day IN week) AS temp ',
+            'LEFT OUTER JOIN bag_holds ON temp.bag_name = bag_holds.bag_name) AS temp2 ',
+            'LEFT OUTER JOIN products ON products.name = temp2.product_name'
+        ]))
+        out_dict['total_cost'] = result['total_cost']
+        return out_dict
+        
 
     @requires_lock
     def do_grocery_list_report(self):
         '''
         Generates a grocery list report.
         '''
-        pass
+        result = self._sqlconn.execute(''.join([
+            'SELECT h.product_name AS name, SUM(h.current_qty) AS current_qty, SUM(h.last_month_qty) AS last_month_qty ',
+            'FROM bag_holds AS h, clients AS c ',
+            'WHERE c.bag_name = h.bag_name ',
+            'GROUP BY h.product_name'
+        ]))
+        return self._row_to_dict(result)
