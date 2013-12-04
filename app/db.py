@@ -86,7 +86,8 @@ class DBInterface(object):
         result = self._sqlconn.execute(''.join([
             'SELECT * FROM clients WHERE id = ?'
         ]), (client_id,))
-        return self._row_to_dict(result)[0]
+        data = self._row_to_dict(result)
+        return data[0] if len(data) > 0 else None
     
     @requires_lock
     def do_pickup_query(self, day_of_month):
@@ -137,7 +138,7 @@ class DBInterface(object):
         self._sqlconn.commit()
 
     @requires_lock
-    def do_drop_off(self, date, *deliveries):
+    def do_drop_off(self, deliveries):
         '''
         Given some number of delivery DICTIONARIES with attributes
         expected in the pseudocode, performs a drop off in the database.
@@ -166,8 +167,8 @@ class DBInterface(object):
                 ]), (delivery['product'], delivery['source']))
             result = self._sqlconn.execute(''.join([
                 'INSERT INTO dropoff_transaction (date, qty, source_name, product_name) ',
-                'VALUE (?, ?, ?, ?)'
-            ]), (date, delivery['qty'], delivery['source'], delivery['product']))
+                'VALUE (date(\'now\'), ?, ?, ?)'
+            ]), (delivery['qty'], delivery['source'], delivery['product']))
         self._sqlconn.commit()
         print "Dropoff complete"
 
@@ -340,16 +341,16 @@ class DBInterface(object):
             'SELECT id FROM clients'
         ]))
         for row in client_ids:
-            id = row['id']
+            client_id = row['id']
             result = self._sqlconn.execute(''.join([
-                'SELECT * FROM ',
-                '(SELECT COUNT(*) AS under18 FROM family_members ',
-                'WHERE client_id = ? AND strftime(\'%Y\', \'now\') - strftime(\'%Y\', dob) < 18)  ',
-                '(SELECT COUNT(*) AS 19to64 FROM family_members ',
-                'WHERE client_id = ? AND strftime(\'%Y\', \'now\') - strftime(\'%Y\', dob) BETWEEN 19 AND 65) ',
-                '(SELECT COUNT(*) AS 65plus FROM family_members ',
-                'WHERE client_id = ? AND strftime(\'%Y\', \'now\') - strftime(\'%Y\', dob) > 65) '
-            ]), (id, id, id))
+                "SELECT * FROM ",
+                "(SELECT COUNT(*) AS under18 FROM family_members ",
+                "WHERE client_id = ? AND strftime('%Y', 'now') - strftime('%Y', dob) < 18)  ",
+                "(SELECT COUNT(*) AS 19to64 FROM family_members ",
+                "WHERE client_id = ? AND strftime('%Y', 'now') - strftime('%Y', dob) BETWEEN 19 AND 65) ",
+                "(SELECT COUNT(*) AS 65plus FROM family_members ",
+                "WHERE client_id = ? AND strftime('%Y', 'now') - strftime('%Y', dob) > 65)"
+            ]), (client_id, client_id, client_id))
             result_dict = self._row_to_dict(result)
             result_list.append(result_dict)
         out_dict = {}
