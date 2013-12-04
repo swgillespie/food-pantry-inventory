@@ -165,7 +165,7 @@ def dropoff():
             form.product.data, form.source.data, form.qty.data
         )
     ## END DB TRANSACTION
-        return redirect('/dropoff/')
+        
     return render_template('dropoff.html', form=form)
 
 
@@ -176,6 +176,25 @@ def products():
 
 @mod.route('products/list/', methods=['GET', 'POST'])
 def product_list():
+    if request.method=='GET':
+        ## BEGIN DB TRANSACTION
+        products = [
+            { 'product': 'milk', 'source':'Kroger', 'cost': 2.23 },
+            { 'product': 'cookies', 'source': 'Kroger','cost': 1.54 },
+            { 'product': 'pretzels', 'source': 'Trader Joe''s','cost': 0.59 },
+            { 'product': 'crackers', 'source': 'Trader Joe''s', 'cost': 4.32 }
+        ]
+        ## END DB TRANSACTION
+        return render_template('product_list.html', products=products)
+    elif request.method=='POST':
+        product_name=request.form['product_name']
+        ## BEGIN DB TRANSACTION
+        products = [
+            { 'product': 'milk', 'source':'Kroger', 'cost': 2.23 },
+        ]
+        print ">>>USER PRODUCT SEARCH: The user searched for product {}.".format(product_name)
+        ## END DB TRANSACTION
+        return render_template('product_list.html', products=products)
     return render_template('product_list.html')
 
 @mod.route('products/new/', methods=['GET', 'POST'])

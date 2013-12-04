@@ -16,11 +16,11 @@
         </div>
     </div><!-- /.container -->
     <div class="container">
-      <form class="form-inline" role="form" action="/pickup/" method="post">
-		<label for="pickup">Product Name</label>
+      <form class="form-inline" role="form" action="/products/list/" method="post">
+		<label for="product_name">Product Name</label>
 		<input type="number" placeholder="(ex: oreos)" id="product_name" name="product_name">
-		<button type="submit" class="btn btn-default">Search</button>
-		<button type="button" href="list/" class="btn btn-success"> Show All</button>
+		<button type="submit" class="btn btn-success">Search</button>
+		<a href="/products/list/" class="btn btn-primary"> Show All</a>
       </form>
       {% if products %}
       <table class="table table-hover">
