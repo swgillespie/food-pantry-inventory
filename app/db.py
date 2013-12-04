@@ -2,8 +2,9 @@ import threading
 import sqlite3
 from functools import wraps
 import hashlib
+import os
 
-SCHEMA_FILE = 'schema.sql'
+SCHEMA_FILE = os.path.join(os.path.abspath('app'), 'schema.sql')
 
 class DBInterface(object):
     

@@ -1,10 +1,9 @@
-from flask import Blueprint, render_template, g, redirect, request, url_for, flash
-# suppress pyflakes warning
-# from app.decorators import requires_login
+from flask import Blueprint, render_template, g, redirect, request, url_for, flash, abort, session
+from app.decorators import requires_login
 from app.forms import LoginForm, RegistrationForm, DropoffForm, NewProductForm
 import base64
 from app.db import DBInterface
-
+from app import app
 
 mod = Blueprint('tools', __name__, url_prefix='/')
 
@@ -19,36 +18,49 @@ def init_db():
             db.execute_script(f.read())
 
 def get_db():
-    if not hasattr(g, sqlite_db):
+    if not hasattr(g, 'sqlite_db'):
         g.sqlite_db = connect_db()
     return g.sqlite_db
 
-@app.teardown_environment
+@app.teardown_appcontext
 def close_db(error):
-    if hasattr(g, sqlite_db):
+    if hasattr(g, 'sqlite_db'):
         g.sqlite_db.close()
 
 @mod.route('/', methods=['GET', 'POST'])
 def login():
-    if hasattr(g, 'user'):
-        redirect(url_for('home'))
+    if session.get('logged_in'):
+        return render_template('index.html')
     form = LoginForm(request.form)
     if request.method == 'POST' and form.validate():
-        ## TODO INTEGRATE WITH DB
-        print "Login: username: {} password: {}".format(
-            form.username.data, form.password.data
-        )
-        return render_template('index.html')
+        db = get_db()
+        success = db.do_login(form.username.data, form.password.data)
+        if success:
+            session['logged_in'] = True
+            session['user'] = form.username.data
+            flash("You are logged in!")
+            return render_template('index.html')
+        else:
+            print "Login failed"
+            flash("Login information incorrect.")
     return render_template('login.html', form=form)
 
+@mod.route('logout', methods=['GET'])
+def logout():
+    del session['logged_in']
+    del session['user']
+    return redirect('/')
+    
 @mod.route('register/', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm(request.form)
     if request.method == 'POST' and form.validate():
         ## TODO INTEGRATE WITH DB
-        print "New user: username: {} password: {}".format(
-            form.username.data, form.password.data
-        )
+        db = get_db()
+        db.do_register(form.username.data, form.lastname.data,
+                       form.firstname.data, form.email.data,
+                       form.password.data, form.is_director.data)
+        flash("Thanks for registering!")
         return redirect('/')
     return render_template('register.html', form=form)
 

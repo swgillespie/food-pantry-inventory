@@ -37,7 +37,8 @@
         </div><!-- /.navbar-collapse -->
       </div><!-- /.container -->
     </nav>
-    {% with message = get_flashed_messages() %}
+    <br>
+    {% with messages = get_flashed_messages() %}
     {% if messages %}
     <div class="container">
       {% for msg in messages %}
@@ -48,6 +49,7 @@
     </div>
     {% endif %}
     {% endwith %}
+
 {% block content %}{% endblock %}
     <div class="container">
         <hr>
