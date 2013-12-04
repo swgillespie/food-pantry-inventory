@@ -108,5 +108,13 @@ def client_list():
 
 @mod.route('clients/new/', methods=['GET', 'POST'])
 def new_client():
-    # TODO
-    return render_template('new_client.html')
+    form = ClientForm(request.form)
+    if request.method == 'GET':
+	return render_template('new_client.html', form=form)
+    elif request.method == 'POST' and form.validate():
+    ## BEGIN DB TRANSACTION
+	print ">>>NEW CLIENT: Pick-Up Day: {}, Name: {} {}, Gender: {}, Birthdate: {}, Street: {}, Apartment: {}, City: {}, State: {}, Zipcode: {}, Phone: {}, Financial Aid: {}, Start Date: {}, Delivery: {}".format(
+		form.bag_type.data, form.pick_up_day.data, form.first_name.data, form.last_name.data, form.gender.data, form.birthdate.data, form.street.data, form.apartment.data, form.city.data, form.state.data, form.zipcode.data, form.phone.data, form.aid.data, form.start_date.data, form.delivery.data
+		)
+  ## END DB TRANSACTION
+    return redirect('clients/new/') #redirect to Add family members page
