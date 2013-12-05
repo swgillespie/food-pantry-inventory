@@ -199,3 +199,19 @@ def new_product():
         return redirect('/products/new/')
     return render_template('new_product.html', form=form)
 
+@mod.route('reports/', methods=['GET'])
+def reports():
+    # nothing to do but render response
+    return render_template('reports.html')
+
+@mod.route('reports/monthly_report/', methods=['GET'])
+def monthly_report():
+    db = get_db()
+    report = db.do_monthly_service_report()
+    return render_template('monthly_report.html', row=report)
+
+@mod.route('reports/grocery_report/', methods=['GET'])
+def grocery_report():
+    db = get_db()
+    report = db.do_grocery_list_report()
+    return render_template('grocery_report.html', rows=report)

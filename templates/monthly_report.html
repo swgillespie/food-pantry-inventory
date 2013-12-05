@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <ol class="breadcrumb">
+                    <li><a href="/">Home</a></li>
+		    <li><a href="/reports/">Reports</a></li>
+		    <li class="active">Monthly Service Report</li>
+                </ol>
+                <h1>Food Pantry Management System <small>Monthly Service Report</small></h1>
+                <hr>
+            </div>
+        </div>
+    </div><!-- /.container -->
+    <div class="container">
+      <table class="table table-hover">
+	<tr>
+	  <th># Households</th>
+	  <th>Under 18 years</th>
+	  <th>Between 18 and 64 years</th>
+	  <th>65+ Years</th>
+	  <th>Cost</th>
+	</tr>
+	<tr>
+	  <td> {{ row['num_clients'] }}</td>
+	  <td> {{ row['under18'] }} </td>
+	  <td> {{ row['19to64'] }} </td>
+	  <td> {{ row['65plus'] }} </td>
+	  <td> {{ row['total_cost'] }} </td>
+	</tr>
+	</table>
+    </div>
+</div>
+{% endblock %}

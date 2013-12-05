@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <ol class="breadcrumb">
+                    <li><a href="/">Home</a></li>
+		    <li><a href="/reports/">Reports</a></li>
+		    <li class="active">Grocery List Report</li>
+                </ol>
+                <h1>Food Pantry Management System <small>Grocery List Report</small></h1>
+                <hr>
+            </div>
+        </div>
+    </div><!-- /.container -->
+    <div class="container">
+      {% if rows %}
+      <table class="table table-hover">
+	<tr>
+	  <th>Product</th>
+	  <th>Quantity</th>
+	  <th>Last Month Quantity</th>
+	</tr>
+	{% for row in rows %}
+	<tr>
+	  <td> {{ row['name'] }}</td>
+	  <td> {{ row['current_qty'] }} </td>
+	  <td> {{ row['last_month_qty'] }} </td>
+	</tr>
+	{% endfor %}
+	</table>
+      {% else %}
+      No report found.
+      {% endif %}
+    </div>
+</div>
+{% endblock %}

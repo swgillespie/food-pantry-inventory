@@ -374,7 +374,6 @@ class DBInterface(object):
         self._sqlconn.commit()
 
 
-
     @requires_lock
     def do_monthly_service_report(self):
         '''
@@ -385,29 +384,36 @@ class DBInterface(object):
             'SELECT id FROM clients'
         ]))
         for row in client_ids:
+            result_dict = {}
             client_id = row['id']
             result = self._sqlconn.execute(''.join([
-                "SELECT * FROM ",
-                "(SELECT COUNT(*) AS under18 FROM family_members ",
-                "WHERE client_id = ? AND strftime('%Y', 'now') - strftime('%Y', dob) < 18)  ",
-                "(SELECT COUNT(*) AS 19to64 FROM family_members ",
-                "WHERE client_id = ? AND strftime('%Y', 'now') - strftime('%Y', dob) BETWEEN 19 AND 65) ",
-                "(SELECT COUNT(*) AS 65plus FROM family_members ",
-                "WHERE client_id = ? AND strftime('%Y', 'now') - strftime('%Y', dob) > 65)"
-            ]), (client_id, client_id, client_id))
-            result_dict = self._row_to_dict(result)
+                "SELECT COUNT(*) AS under18 from family_members ",
+                "WHERE client_id = ? AND strftime('%Y', 'now') - strftime('%Y', dob) < 18"
+            ]), (client_id,))
+            result_dict['under18'] = self._row_to_dict(result)[0]['under18']
+            result = self._sqlconn.execute(''.join([
+                "SELECT COUNT(*) AS n19to64 FROM family_members ",
+                "WHERE client_id = ? AND strftime('%Y', 'now') - strftime('%Y', dob) BETWEEN 19 AND 65"
+            ]), (client_id,))
+            result_dict['19to64'] = self._row_to_dict(result)[0]['n19to64']
+            result = self._sqlconn.execute(''.join([
+                "SELECT COUNT(*) AS n65plus FROM family_members ",
+                "WHERE client_id = ? AND strftime('%Y', 'now') - strftime('%Y', dob) > 65"
+            ]), (client_id,))
+            result_dict['65plus'] = self._row_to_dict(result)[0]['n65plus']
             result_list.append(result_dict)
         out_dict = {}
         out_dict['num_clients'] = len(result_dict)
         out_dict['num_people'] = sum([x['under18'] + x['19to64'] + x['65plus'] for x in result_list]) + out_dict['num_clients']
+        out_dict['under18'] = sum([x['under18'] for x in result_list])
+        out_dict['19to64'] = sum([x['19to64'] for x in result_list])
+        out_dict['65plus'] = sum([x['65plus'] for x in result_list])
         result = self._sqlconn.execute(''.join([
-            'SELECT SUM(cost) AS total_cost ', 
-            '(SELECT product_name FROM ',
-            '(SELECT id, bag_name FROM clients WHERE pickup_day IN week) AS temp ',
-            'LEFT OUTER JOIN bag_holds ON temp.bag_name = bag_holds.bag_name) AS temp2 ',
-            'LEFT OUTER JOIN products ON products.name = temp2.product_name'
+            'SELECT SUM(p.cost) AS total_cost ',
+            'FROM bag_holds AS h, clients AS c, products AS p ',
+            'WHERE h.bag_name = c.bag_name AND h.product_name = p.name'
         ]))
-        out_dict['total_cost'] = result['total_cost']
+        out_dict['total_cost'] = self._row_to_dict(result)[0]['total_cost']
         return out_dict
         
 
