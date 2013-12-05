@@ -149,12 +149,17 @@ def dropoff():
     if request.method == 'GET':
         return render_template('dropoff.html', form=form)
     elif request.method == 'POST' and form.validate():
-    ## BEGIN DB TRANSACTION
-        print ">>>NEW DROPOFF: product: {}, source: {}, qty: {}".format(
-            form.product.data, form.source.data, form.qty.data
-        )
-    ## END DB TRANSACTION
-        
+        db = get_db()
+        success = db.do_drop_off([{
+            'source': form.source.data,
+            'product': form.product.data,
+            'qty': form.qty.data
+        }])
+        if not success:
+            flash("Product does not exist in the database!")
+        else:
+            flash("Dropoff complete!")
+        return redirect('dropoff/')
     return render_template('dropoff.html', form=form)
 
 
@@ -167,22 +172,14 @@ def products():
 def product_list():
     if request.method=='GET':
         ## BEGIN DB TRANSACTION
-        products = [
-            { 'product': 'milk', 'source':'Kroger', 'cost': 2.23 },
-            { 'product': 'cookies', 'source': 'Kroger','cost': 1.54 },
-            { 'product': 'pretzels', 'source': 'Trader Joe''s','cost': 0.59 },
-            { 'product': 'crackers', 'source': 'Trader Joe''s', 'cost': 4.32 }
-        ]
-        ## END DB TRANSACTION
+        db = get_db()
+        products = db.do_list_products()
         return render_template('product_list.html', products=products)
     elif request.method=='POST':
         product_name=request.form['product_name']
         ## BEGIN DB TRANSACTION
-        products = [
-            { 'product': 'milk', 'source':'Kroger', 'cost': 2.23 },
-        ]
-        print ">>>USER PRODUCT SEARCH: The user searched for product {}.".format(product_name)
-        ## END DB TRANSACTION
+        db = get_db()
+        products = db.do_search_products(product_name)
         return render_template('product_list.html', products=products)
     return render_template('product_list.html')
 
@@ -192,11 +189,13 @@ def new_product():
     if request.method == 'GET':
         return render_template('new_product.html', form=form)
     elif request.method == 'POST' and form.validate():
-    ## BEGIN DB TRANSACTION
-        print ">>>NEW PRODUCT: product: {}, source: {}, cost-per-unit: {}".format(
-            form.product.data, form.source.data, form.cost.data
-        )
-    ## END DB TRANSACTION
+        db = get_db()
+        db.do_add_new_product({
+            'name': form.product.data,
+            'source_name': form.source.data,
+            'cost': form.cost.data
+        })
+        flash("Product added!")
         return redirect('/products/new/')
     return render_template('new_product.html', form=form)
 

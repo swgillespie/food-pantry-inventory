@@ -162,16 +162,13 @@ class DBInterface(object):
             ]), (delivery['product'],))
             if len([x for x in result]) == 0:
                 print "product {} not in database".format(delivery['product'])
-                result = self._sqlconn.execute(''.join([
-                    'INSERT INTO products(name, source_name) ',
-                    'VALUES (?, ?)'
-                ]), (delivery['product'], delivery['source']))
+                return False
             result = self._sqlconn.execute(''.join([
-                'INSERT INTO dropoff_transaction (date, qty, source_name, product_name) ',
-                'VALUE (date(\'now\'), ?, ?, ?)'
+                'INSERT INTO dropoff_transactions (date, qty, source_name, product_name) ',
+                'VALUES (date(\'now\'), ?, ?, ?)'
             ]), (delivery['qty'], delivery['source'], delivery['product']))
         self._sqlconn.commit()
-        print "Dropoff complete"
+        return True
 
     @requires_lock
     def do_search_client(self, lastname=None, phone=None):
@@ -349,6 +346,17 @@ class DBInterface(object):
         ]))
         return self._row_to_dict(result)
 
+    def do_search_products(self, name):
+        '''
+        Returns a list of all products with the name given.
+        '''
+        result = self._sqlconn.execute(''.join([
+            'SELECT * FROM products ',
+            'WHERE name = ? ',
+            'ORDER BY name'
+        ]), (name,))
+        return self._row_to_dict(result)
+
     @requires_lock
     def do_add_new_product(self, product_dictionary):
         '''
@@ -364,6 +372,8 @@ class DBInterface(object):
             product_dictionary['source_name']
         ))
         self._sqlconn.commit()
+
+
 
     @requires_lock
     def do_monthly_service_report(self):

@@ -58,7 +58,7 @@ class NewProductForm(Form):
         validators.Length(min=3, max=24),
         validators.InputRequired(message="This field is required.")
     ])
-    cost = DecimalField("Cost Per Unit", [
-        validators.NumberRange(min=0.01, message="Must drop off at least one of this product."),
+    cost = IntegerField("Cost Per Unit", [
+        validators.NumberRange(min=1, message="Cost must be at least 1."),
         validators.InputRequired(message="This field is required.")
     ])
