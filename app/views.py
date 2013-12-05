@@ -55,7 +55,6 @@ def logout():
 def register():
     form = RegistrationForm(request.form)
     if request.method == 'POST' and form.validate():
-        ## TODO INTEGRATE WITH DB
         db = get_db()
         db.do_register(form.username.data, form.lastname.data,
                        form.firstname.data, form.email.data,
@@ -71,37 +70,12 @@ def pickup():
     elif request.method == 'POST':
         if 'pickup' in request.form:
             pickup_day = request.form['pickup']
-            ## DO DB QUERY HERE 
-            rows = [{
-                'client_id': 42,
-                'lastname': 'gillespie',
-                'firstname': 'sean',
-                'family_size': 8,
-                'street': '123 Easy Street',
-                'city': 'Compton',
-                'state': 'CA',
-                'zip': 12345,
-                'apartment': 9999,
-                'phone': '123-456-7890',
-                'pickup_day': 9
-            },
-            {
-                'client_id': 42,
-                'lastname': 'gillespie',
-                'firstname': 'sean',
-                'family_size': 8,
-                'street': '123 Easy Street',
-                'city': 'Compton',
-                'state': 'CA',
-                'zip': 12345,
-                'apartment': 9999,
-                'phone': '123-456-7890',
-                'pickup_day': 9
-            }
-
-            ]
-            ## END DB TRANSACTION
-            return render_template('pickup.html', rows=rows)
+            db = get_db()
+            result = db.do_pickup_query(pickup_day)
+            if len(result) == 0:
+                flash("No pickups found on this day.")
+            print result
+            return render_template('pickup.html', rows=result)
     # other methods are not supported
     return render_template('pickup.html')
 
@@ -109,23 +83,18 @@ def pickup():
 def family_pickup(client_id):
     if request.method == 'GET':
         ## BEGIN DB TRANSACTION
-        client = {
-            'firstname': 'sean',
-            'lastname': 'gillespie',
-            'id': 42
-        }
-        products = [
-            { 'product_name': 'milk', 'current_qty': 42 },
-            { 'product_name': 'cookies', 'current_qty': 11 },
-            { 'product_name': 'pretzels', 'current_qty': 39 },
-            { 'product_name': 'crackers', 'current_qty': 55 }
-        ]
-        ## END DB TRANSACTION
-        return render_template('family_pickup.html', client=client, rows=products)
+        db = get_db()
+        client = db.client_lookup_by_id(client_id)
+        if client is None:
+            abort(404) # not found
+        family_bag = db.do_family_bag_show(client_id)
+        return render_template('family_pickup.html', client=client,
+                               rows=family_bag)
     elif request.method == 'POST':
         ## BEGIN DB TRANSACTION
-        print "Client {} just picked up their bag".format(client_id)
-        ## END DB TRANSACTION
+        db = get_db()
+        db.do_family_bag_pickup(client_id)
+        flash("Client {} has successfully picked up their bag.".format(client_id))
         return render_template('pickup.html')
     # other methods not supported
     return redirect('/pickup/')
@@ -147,20 +116,10 @@ def new_client():
 
 @mod.route('bag_list/', methods=['GET'])
 def bag_list():
-    bags = [{
-                'bagname': 'Family Bag 1',
-                'numitems': 5,
-                'numclients': 37,
-                'cost': 15.64,
-            },
-            {
-                'bagname': 'Family Bag 2',
-                'numitems': 7,
-                'numclients': 21,
-                'cost': 23.78,
-            }]
+    db = get_db()
+    bags = db.do_bag_list()
     for bag in bags:
-        bag['bagnameEnc'] = base64.b16encode(bag['bagname'])
+        bag['bagnameEnc'] = base64.b16encode(bag['bag_name'])
     return render_template('bag_list.html', bags=bags)
 
 @mod.route('viewEditBag/<string:bagnameEnc>/', methods=['GET', 'POST'])
@@ -168,22 +127,19 @@ def view_edit_bag(bagnameEnc):
     bagname = base64.b16decode(bagnameEnc)
     if request.method=='GET':
     ## BEGIN DB TRANSACTION
-        bag = [
-            { 'product_name': 'milk', 'qty': 2 },
-            { 'product_name': 'cookies', 'qty': 1 },
-            { 'product_name': 'pretzels', 'qty': 2 },
-            { 'product_name': 'crackers', 'qty': 5 }
-        ]
+        db = get_db()
+        bag = db.do_view_bag(bagname)
     elif request.method=='POST':
+        db = get_db()
         product_name=request.form['product_name']
-        qty=request.form['qty']
-        bag = [
-            { 'product_name': 'milk', 'qty': request.form['qty'] },
-            { 'product_name': 'cookies', 'qty': 1 },
-            { 'product_name': 'pretzels', 'qty': 2 },
-            { 'product_name': 'crackers', 'qty': 5 }
-        ]
-        print ">>>PRODUCT UPDATE: The qty of product {} has been updated to {}.".format(product_name, qty)
+        qty = request.form['qty']
+        if qty == '0':
+            print "removing a product"
+            db.do_remove_product(bagname, product_name)
+        else:
+            db.do_edit_product_qty(bagname, product_name, qty)
+        flash("Bag updated!")
+        return redirect('viewEditBag/{}'.format(bagnameEnc))
     ## END DB TRANSACTION
     return render_template('viewEditBag.html', bag=bag, bagname=bagname, bagnameEnc=bagnameEnc)
 

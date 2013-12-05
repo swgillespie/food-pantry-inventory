@@ -97,7 +97,7 @@ class DBInterface(object):
         '''
         print "pickup query for day {}".format(day_of_month)
         result = self._sqlconn.execute(''.join([
-            'SELECT lastname, firstname, family_size, street, city, state, zip, apartment, phone, pickup_day ',
+            'SELECT id, lastname, firstname, family_size, street, city, state, zip, apartment, phone, pickup_day ',
             'FROM clients_with_family_size ',
             'WHERE pickup_day = ?'
         ]), (day_of_month,))
@@ -248,6 +248,39 @@ class DBInterface(object):
         print "Family addition complete"
 
     @requires_lock
+    def do_bag_list(self):
+        '''
+        Returns a list of all bags currently in the system
+        '''
+        out_list = []
+        bags = self._sqlconn.execute(''.join([
+            'SELECT bag_name FROM bags'
+        ]))
+        bags = self._row_to_dict(bags)
+        for bag in bags:
+            out_dict = {
+                'bag_name': bag['bag_name']
+            }
+            result = self._sqlconn.execute(''.join([
+                'SELECT COUNT(*) AS count FROM bag_holds ',
+                'WHERE bag_name = ?'
+            ]), (bag['bag_name'],))
+            out_dict['numitems'] = self._row_to_dict(result)[0]['count']
+            result = self._sqlconn.execute(''.join([
+                'SELECT COUNT(*) AS count FROM clients ',
+                'WHERE bag_name = ?'
+            ]), (bag['bag_name'],))
+            out_dict['numclients'] = self._row_to_dict(result)[0]['count']
+            result = self._sqlconn.execute(''.join([
+                'SELECT SUM(p.cost) AS count ',
+                'FROM bag_holds AS h, products AS p ',
+                'WHERE h.product_name = p.name AND h.bag_name = ?'
+            ]), (bag['bag_name'],))
+            out_dict['cost'] = self._row_to_dict(result)[0]['count']
+            out_list.append(out_dict)
+        return out_list
+    
+    @requires_lock
     def do_view_bag(self, bag_name):
         '''
         Performs a query that returns the contents of a bag named bag_name.
@@ -301,7 +334,7 @@ class DBInterface(object):
             'UPDATE bag_holds ',
             'SET current_qty=? ',
             'WHERE bag_holds.bag_name = ? AND bag_holds.product_name = ?'
-        ]), (bag_name, product_name))
+        ]), (qty, bag_name, product_name))
         self._sqlconn.commit()
         print "product {} updated to qty {}".format(product_name, qty)
 

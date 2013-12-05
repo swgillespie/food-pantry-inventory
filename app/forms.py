@@ -28,6 +28,7 @@ class RegistrationForm(Form):
         validators.Email(message="Please enter a valid email")
     ])
     password = PasswordField("Password", [
+        validators.Length(min=4, max=20),
         validators.Required(),
         validators.EqualTo('confirm_pass', message='Passwords must match')
     ])
