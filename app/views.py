@@ -106,7 +106,28 @@ def clients():
 
 @mod.route('clients/list/', methods=['GET', 'POST'])
 def client_list():
-    # TODO
+    if request.method=='GET':
+    ## BEGIN DB TRANSACTION
+        clients = [
+            { 'last': 'Spears', 'first': 'Britney', 'size': 1,
+              'address': '5555 Hollywood Lane, Los Angeles, CA 90210', 'phone': '555-5555'},
+            { 'last': 'Smith', 'first': 'Will', 'size': 3,
+              'address': '5556 Hollywood Lane, Los Angeles, CA 90210', 'phone': '555-5556'},
+        ]
+        return render_template('client_list.html', clients=clients)
+    elif request.method=='POST':
+        name= request.form['lastname']
+        phone = request.form['phonenum']
+        clients = [
+            { 'last': 'Smith', 'first': 'Will', 'size': 3,
+              'address': '5556 Hollywood Lane, Los Angeles, CA 90210', 'phone': '555-5556'}
+        ]
+        if name:
+            print ">>>CLIENT SEARCH: the user searched for client last name {}".format(name)
+        if phone:
+            print ">>>CLIENT SEARCH: the user searched for phone number {}".format(phone)
+        ## END DB TRANSACTION
+        return render_template('client_list.html', clients=clients)
     return render_template('client_list.html')
 
 @mod.route('clients/new/', methods=['GET', 'POST'])
