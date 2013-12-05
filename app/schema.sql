@@ -176,6 +176,9 @@ VALUES(6, 11, 'single person bag', 'milk');
 INSERT INTO financial_aids (is_fed, name)
 VALUES('1', 'federal');
 
+INSERT INTO financial_aids (is_fed, name)
+VALUES('0', 'state');
+
 UPDATE clients SET bag_name = 'family bag'
 WHERE id IN (2, 3);
 
