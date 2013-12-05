@@ -34,10 +34,10 @@ class RegistrationForm(Form):
     confirm_pass = PasswordField("Password Again")
     is_director = BooleanField("Are you a director?")
 
-class ClientForm:
+class ClientForm(Form):
     pick_up_day = IntegerField("Pick-up Day", [
 	validators.Length(min=1, max=2),
-	validators.InputRequired(message="This field is required.")
+	validators.InputRequired(message="This field is required."),
 	validators.NumberRange(min=1, max=28, message="Date must be between 1 and 28.")
     ])
     first_name = TextField("First Name", [
