@@ -19,6 +19,7 @@
       {% from "_form_helpers.html" import render_field %}
       <form class="form" method="post" action="/clients/new/">
 	<h1 class="form-heading text-muted">New Client</h1>
+
 	{{ render_field(form.pick_up_day) }}
 	{{ render_field(form.first_name) }}
 	{{ render_field(form.last_name) }}
@@ -29,6 +30,11 @@
 	{{ render_field(form.state) }}
 	{{ render_field(form.zipcode) }}
 	{{ render_field(form.phone) }}
+	<select>
+	{% for aid in AIDS %}
+	  <option>{{aid}}</option>
+	{% endfor %}
+	</select>
 	{{ render_field(form.start_date) }}
 	{{ render_field(form.delivery) }}
 	<button class="btn btn-lg btn-primary btn-block" type="submit">

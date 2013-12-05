@@ -110,9 +110,14 @@ def client_list():
 def new_client():
     form = ClientForm(request.form)
     if request.method == 'GET':
-	return render_template('/new_client.html', form=form)
+	AIDS = ("state","gov")
+
+	return render_template('/new_client.html', form=form, AIDS = AIDS)
     elif request.method == 'POST' and form.validate():
     ## BEGIN DB TRANSACTION
+
+
+
 	print ">>>NEW CLIENT: Pick-up Day: {}".fomat(form.pick_up_day.data)
 
 ##	print ">>>NEW CLIENT: Pick-Up Day: {}, Name: {} {}, Gender: {}, Birthdate: {}, Street: {}, Apartment: {}, City: {}, State: {}, Zipcode: {}, Phone: {}, Financial Aid: {}, Start Date: {}, Delivery: {}".format(
