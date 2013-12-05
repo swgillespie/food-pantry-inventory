@@ -52,12 +52,12 @@
 	  </div><!-- /.modal -->
 	  </td>
 	  <td> {{ product['product_name'] }} </td>
-	  <td> {{ product['qty'] }} </td>
+	  <td> {{ product['current_qty'] }} </td>
 	</tr>
 	{% endfor %}
 	</table>
       {% else %}
-      No Bags Found.
+      <p>No products found.</p>
       {% endif %}
     </div>
 </div>

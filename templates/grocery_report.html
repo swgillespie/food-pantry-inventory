@@ -7,35 +7,32 @@
             <div class="col-lg-12">
                 <ol class="breadcrumb">
                     <li><a href="/">Home</a></li>
-		    <li class="active">Bag List</li>
+		    <li><a href="/reports/">Reports</a></li>
+		    <li class="active">Grocery List Report</li>
                 </ol>
-                <h1>Food Pantry Management System <small>Bag List</small></h1>
+                <h1>Food Pantry Management System <small>Grocery List Report</small></h1>
                 <hr>
             </div>
         </div>
     </div><!-- /.container -->
     <div class="container">
-      {% if bags %}
+      {% if rows %}
       <table class="table table-hover">
 	<tr>
-	  <th></th>
-	  <th>Bag Name</th>
-	  <th>No. of Items</th>
-	  <th>No. of Clients</th>
-	  <th>Cost</th>
+	  <th>Product</th>
+	  <th>Quantity</th>
+	  <th>Last Month Quantity</th>
 	</tr>
-        {% for bag in bags %}
+	{% for row in rows %}
 	<tr>
-	  <td> <a href="/viewEditBag/{{ bag['bagnameEnc'] }}" class="btn btn-success">View/Edit</a></td>
-	  <td> {{ bag['bag_name'] }} </td>
-	  <td> {{ bag['numitems'] }} </td>
-	  <td> {{ bag['numclients'] }} </td>
-	  <td> {{ bag['cost'] }} </td>
+	  <td> {{ row['name'] }}</td>
+	  <td> {{ row['current_qty'] }} </td>
+	  <td> {{ row['last_month_qty'] }} </td>
 	</tr>
 	{% endfor %}
 	</table>
       {% else %}
-      No Bags Found.
+      No report found.
       {% endif %}
     </div>
 </div>

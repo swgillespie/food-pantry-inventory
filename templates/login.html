@@ -64,6 +64,17 @@
     </style>
 </head>
 <body>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="container">
+      {% for msg in messages %}
+      <div class="alert alert-danger">
+	{{ msg }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
 
 {% from "_form_helpers.html" import render_field %}
 
@@ -78,7 +89,6 @@
 		<a class="btn btn-lg btn-block btn-success" href="/register/" role="button">Register</a>
 
 </div>
-p
 
     <script src="static/js/jquery.js"></script>
     <script src="static/js/bootstrap.js"></script>

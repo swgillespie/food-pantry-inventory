@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+	<ol class="breadcrumb">
+          <li><a href="/">Home</a></li>
+	  <li class="active">Reports</li>
+        </ol>
+	<h1> Reports Portal <small>Food Pantry Management System</small></h1>
+      </div>
+    </div>
+    <br>
+    <div class="row">
+      <div class="col-md-6">
+	<a href="monthly_report/" class="thumbnail center">
+          <center>
+            <img src="/static/img/list.png" width=150/>
+            <div class="caption">
+              <h3>Monthly Service Report</h3>
+            </div>
+          </center>
+        </a>
+      </div>
+      <div class="col-md-6">
+	<a href="grocery_report/" class="thumbnail center">
+          <center>
+	    <img src="/static/img/new.png" width=150/>
+            <div class="caption">
+              <h3>Grocery List Report</h3>
+            </div>
+          </center>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
