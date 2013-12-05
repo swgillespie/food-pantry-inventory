@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, g, redirect, request, url_for, flash, abort, session
 from app.decorators import requires_login
-from app.forms import LoginForm, RegistrationForm, DropoffForm, NewProductForm
+from app.forms import LoginForm, RegistrationForm, DropoffForm, NewProductForm, ClientForm, FamilyForm
 import base64
 from app.db import DBInterface
 from app import app
@@ -108,32 +108,81 @@ def clients():
 def client_list():
     if request.method=='GET':
     ## BEGIN DB TRANSACTION
-        clients = [
-            { 'last': 'Spears', 'first': 'Britney', 'size': 1,
-              'address': '5555 Hollywood Lane, Los Angeles, CA 90210', 'phone': '555-5555'},
-            { 'last': 'Smith', 'first': 'Will', 'size': 3,
-              'address': '5556 Hollywood Lane, Los Angeles, CA 90210', 'phone': '555-5556'},
-        ]
-        return render_template('client_list.html', clients=clients)
+        db = get_db()
+        result = db.get_clients()
+        print result
+        return render_template('client_list.html', clients=result)
     elif request.method=='POST':
-        name= request.form['lastname']
-        phone = request.form['phonenum']
-        clients = [
-            { 'last': 'Smith', 'first': 'Will', 'size': 3,
-              'address': '5556 Hollywood Lane, Los Angeles, CA 90210', 'phone': '555-5556'}
-        ]
-        if name:
-            print ">>>CLIENT SEARCH: the user searched for client last name {}".format(name)
-        if phone:
-            print ">>>CLIENT SEARCH: the user searched for phone number {}".format(phone)
-        ## END DB TRANSACTION
+        name = request.form.get('lastname')
+        phone = request.form.get('phonenum')
+        print "name: {} phone: {}".format(name, phone)
+        db = get_db()
+        clients = db.do_search_client(lastname=name, phone=phone)
+        print clients
         return render_template('client_list.html', clients=clients)
     return render_template('client_list.html')
 
 @mod.route('clients/new/', methods=['GET', 'POST'])
 def new_client():
     # TODO
-    return render_template('new_client.html')
+    db = get_db()
+    aids = [(x['name'], x['name']) for x in db.do_get_aid()]
+    bags = [(x['bag_name'], x['bag_name']) for x in db.do_bag_list()]
+    form = ClientForm(request.form)
+    form.aid.choices = aids
+    form.bag.choices = bags
+    if request.method == 'GET':
+        return render_template('new_client.html', form=form)
+    elif request.method == 'POST' and form.validate():
+        db = get_db()
+        db.do_new_client({
+            'gender': 'M' if form.gender.data == 'Male' else 'F',
+            'dob': form.birthdate.data,
+            'start_date': form.start_date.data,
+            'street': form.street.data,
+            'city': form.city.data,
+            'state': form.state.data,
+            'zip': form.zipcode.data,
+            'apartment': form.apartment_num.data,
+            'firstname': form.first_name.data,
+            'lastname': form.last_name.data,
+            'phone': form.phone.data,
+            'bag_name': form.bag.data,
+            'pickup_day': form.pick_up_day.data
+        })
+        flash("New client created!")
+        # hack - pull the client-id
+        result = db._sqlconn.execute(''.join([
+            'SELECT * FROM clients WHERE firstname = ? ',
+            'AND lastname = ?'
+        ]), (form.first_name.data, form.last_name.data))
+        client_id = db._row_to_dict(result)[0]['id']
+        if form.aid.data:
+            db.do_client_add_aid(client_id, form.aid.data)
+        return redirect('clients/family/{}/'.format(client_id))
+    else:
+        print "validation failed"
+    return render_template('new_client.html', form=form)
+
+@mod.route('clients/family/<int:client_id>/', methods=['GET', 'POST'])
+def family_members(client_id):
+    form = FamilyForm(request.form)
+    if request.method == 'GET':
+        db = get_db()
+        family = db.do_get_family(client_id)
+        return render_template('family_members.html', form=form, family=family, client_id=client_id)
+    elif request.method == 'POST' and form.validate():
+        db = get_db()
+        db.do_add_family({
+            'firstname': form.firstname.data,
+            'lastname': form.lastname.data,
+            'dob': form.dob.data,
+            'gender': form.gender.data,
+            'client_id': client_id
+        })
+        flash("Family member added!")
+        return redirect('clients/family/{}/'.format(client_id))
+    return render_template('family_members.html', form=form)
 
 @mod.route('bag_list/', methods=['GET'])
 def bag_list():

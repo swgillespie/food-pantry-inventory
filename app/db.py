@@ -104,6 +104,11 @@ class DBInterface(object):
         return self._row_to_dict(result)
 
     @requires_lock
+    def get_clients(self):
+        result = self._sqlconn.execute('SELECT * FROM clients_with_family_size')
+        return self._row_to_dict(result)
+    
+    @requires_lock
     def do_family_bag_show(self, client_id):
         '''
         Returns the contents of a family's bag.
@@ -171,19 +176,19 @@ class DBInterface(object):
         return True
 
     @requires_lock
-    def do_search_client(self, lastname=None, phone=None):
+    def do_search_client(self, lastname='', phone=''):
         '''
         Search for a client using either lastname or phone.
         '''
-        if lastname is None and phone is None:
+        if lastname == '' and phone == '':
             return []
         else:
-            if not lastname is None and phone is None:
+            if not lastname == '' and phone == '':
                 result = self._sqlconn.execute(''.join([
                     'SELECT * FROM clients_with_family_size ',
                     'WHERE lastname = ?'
                 ]), (lastname,))
-            elif lastname is None and not phone is None:
+            elif lastname == '' and not phone == '':
                 result = self._sqlconn.execute(''.join([
                     'SELECT * FROM clients_with_family_size ',
                     'WHERE phone = ?'
@@ -201,6 +206,7 @@ class DBInterface(object):
         Given a dictionary with the Client's information, insert
         into the clients table.
         '''
+        import pprint; pprint.pprint(client_dictionary)
         result = self._sqlconn.execute(''.join([
             'INSERT INTO clients (gender, dob, start_date, street, city, state, zip, ',
             'apartment, firstname, lastname, phone, bag_name, pickup_day)',
@@ -208,8 +214,7 @@ class DBInterface(object):
         ]), (
             client_dictionary['gender'],
             client_dictionary['dob'],
-            client_dictionary['start'],
-            client_dictionary['date'],
+            client_dictionary['start_date'],
             client_dictionary['street'],
             client_dictionary['city'],
             client_dictionary['state'],
@@ -218,13 +223,19 @@ class DBInterface(object):
             client_dictionary['firstname'],
             client_dictionary['lastname'],
             client_dictionary['phone'],
-            client_dictionary['bag'],
-            client_dictionary['name'],
+            client_dictionary['bag_name'],
             client_dictionary['pickup_day']
         ))
         self._sqlconn.commit()
         print "Client addition complete"        
 
+    @requires_lock
+    def do_get_aid(self):
+        result = self._sqlconn.execute(''.join([
+            'SELECT * FROM financial_aids'
+        ]))
+        return self._row_to_dict(result)
+        
     @requires_lock
     def do_add_family(self, family_dictionary):
         '''
@@ -233,7 +244,7 @@ class DBInterface(object):
         '''
         result = self._sqlconn.execute(''.join([
             'INSERT INTO family_members (firstname, lastname, dob, gender, client_id) ',
-            'VALUES (?, ? ?, ?, ?)'
+            'VALUES (?, ?, ?, ?, ?)'
         ]), (
             family_dictionary['firstname'],
             family_dictionary['lastname'],
@@ -244,6 +255,14 @@ class DBInterface(object):
         self._sqlconn.commit()
         print "Family addition complete"
 
+    @requires_lock
+    def do_get_family(self, client_id):
+        result = self._sqlconn.execute(''.join([
+            'SELECT * FROM family_members ',
+            'WHERE client_id = ?'
+        ]), (client_id,))
+        return self._row_to_dict(result)
+        
     @requires_lock
     def do_bag_list(self):
         '''
@@ -290,6 +309,13 @@ class DBInterface(object):
         ]), (bag_name,))
         return self._row_to_dict(result)
 
+    @requires_lock
+    def do_client_add_aid(self, client_id, aid_name):
+        result = self._sqlconn.execute(''.join([
+            'INSERT INTO client_finaid_relationships ',
+            'VALUES (?, ?)'
+        ]), (client_id, aid_name))
+        
     @requires_lock
     def do_add_product(self, bag_name, product_name, qty, last_qty):
         '''

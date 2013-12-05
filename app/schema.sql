@@ -173,6 +173,9 @@ VALUES(5, 10, 'single person bag', 'bread');
 INSERT INTO bag_holds (current_qty, last_month_qty, bag_name, product_name)
 VALUES(6, 11, 'single person bag', 'milk');
 
+INSERT INTO financial_aids (is_fed, name)
+VALUES('1', 'federal');
+
 UPDATE clients SET bag_name = 'family bag'
 WHERE id IN (2, 3);
 

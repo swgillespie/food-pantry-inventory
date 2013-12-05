@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block content %}
@@ -14,9 +15,33 @@
       </div>
     </div>
     <br>
-    <div class="row">
-      <p> I don't want to do this yet. Cheers! </p>
-    </div>
+      <table class="table table-hover">
+
+      {% from "_form_helpers.html" import render_field %}
+      <form class="form" method="post" action="/clients/new/">
+	<h1 class="form-heading text-muted">New Client</h1>
+
+	{{ render_field(form.pick_up_day) }}
+	{{ render_field(form.first_name) }}
+	{{ render_field(form.last_name) }}
+	{{ render_field(form.gender) }}
+	{{ render_field(form.birthdate) }}
+	{{ render_field(form.street) }}
+	{{ render_field(form.apartment_num)}}
+	{{ render_field(form.city) }}
+	{{ render_field(form.state) }}
+	{{ render_field(form.zipcode) }}
+	{{ render_field(form.phone) }}
+	{{ render_field(form.aid) }}
+	{{ render_field(form.bag) }}
+	{{ render_field(form.start_date) }}
+	{{ render_field(form.delivery) }}
+	<button class="btn btn-lg btn-primary btn-block" type="submit">
+		Submit
+        </button>
+      </form>
+      </table>
+    </br>
   </div>
 </div>
 {% endblock %}

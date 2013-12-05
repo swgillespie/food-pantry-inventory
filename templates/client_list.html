@@ -39,12 +39,12 @@
 	</tr>
         {% for client in clients %}
 	<tr>
-	  <td> {{ client['last'] }} </td>
-	  <td> {{ client['first'] }} </td>
-	  <td> {{ client['size'] }} </td>
-	  <td> {{ client['address'] }} </td>
+	  <td> {{ client['lastname'] }} </td>
+	  <td> {{ client['firstname'] }} </td>
+	  <td> {{ client['family_size'] }} </td>
+	  <td> {{ client['street'] }} {{ client['city']}} {{ client['state']}} {{ client['zip'] }} </td>
 	  <td> {{ client['phone'] }} </td>
-	  <td> {{ client['startdate'] }} </td>
+	  <td> {{ client['start_date'] }} </td>
 	</tr>
 	{% endfor %}
 	</table>
